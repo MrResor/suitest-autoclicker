@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "suitest-autoclicker"
+version = "0.1.0"
+description = "Program for translaiting string to sequence of clicks on the remote for particular devices in TVLab."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^2.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
