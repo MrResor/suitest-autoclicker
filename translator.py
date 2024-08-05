@@ -119,5 +119,6 @@ class translator():
         func()
     
     def handle_win_and_linux_output(self):
-        print(self._commands)
         print("platform not supported for copying to clipboard, please copy manualy from below:")
+        print(self._commands)
+        
