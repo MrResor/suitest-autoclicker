@@ -37,7 +37,7 @@ class Translator():
         _handle_win_and_linux_output    -- handles the printing of the result on windows and linux platforms.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """ Sets up translator and constants that are used later on. Calls for initial parsing of the input
             string.
         """
@@ -46,13 +46,13 @@ class Translator():
         self._read_keyboard_setup()
         self._input_prep()
 
-    def _read_keyboard_setup(self):
+    def _read_keyboard_setup(self) -> None:
         """ Read keyboard .json file and parse it into JSON / dictionary.
         """
         with open("keyboards/" + self._args.platform + ".json") as f:
             self._keyboard = json.loads("".join(f.readlines()))
 
-    def _input_prep(self):
+    def _input_prep(self) -> None:
         """ Parses the input string based on the keyboard type so it can be typed in using given keyboard.
             For example, for keyboards of type 1 and 2 any capital letter needs to be changed into normal
             letter with SHIFT preeceding it or with CAPS encasing it.
@@ -96,13 +96,13 @@ class Translator():
                 text.insert(0, "SPECIAL")
         self._text = text
 
-    def run(self):
+    def run(self) -> None:
         """ Prepaires the commands to be used by suitest and puts them into clipboard.
         """
         self._prep_commands()
         self._to_clipboard()
 
-    def _prep_commands(self):
+    def _prep_commands(self) -> None:
         """ Prepaires the commands that should be send to suitest to type in given string. It paires the
             letters in the string (for example 'ABC' is converted into pairs 'AB' and 'BC') and then finds
             the shortest paths using BFS which then is translated to remote clicks.
@@ -137,7 +137,7 @@ class Translator():
                 
         self._commands = '[' + ','.join(commands) + ']'
 
-    def _bfs(self, graph, S, D):
+    def _bfs(self, graph:dict, S:str, D:str) -> None:
         """ Implementation of Breadth First Search algorithm for finding shortest path in the graph. Takes
             in graph description, starting and destination nodes as parameters and returns a list of nodes
             that needs to be visited in given order to reach destination node from the starting node.
@@ -169,7 +169,7 @@ class Translator():
                     visited[neighbour] = node
                     q.append(neighbour)    
 
-    def _to_clipboard(self):
+    def _to_clipboard(self) -> None:
         """ Copies prepared instructions to clipboard, and if copying is not possible it will call a function
             that handles that.
         """
@@ -182,7 +182,7 @@ class Translator():
         elif platform == "win32":
             self._handle_win_and_linux_output()
     
-    def _handle_win_and_linux_output(self):
+    def _handle_win_and_linux_output(self) -> None:
         """ Informs that copying to clipboard is not possible and prints to console.
         """
         print("Platform not supported for copying to clipboard, please copy manualy from below:")
