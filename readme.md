@@ -42,7 +42,13 @@ options:
 
 ## Data
 
-All the .json files can be found in the keyboards folder, they are hand made by observing the keyboards and their behaviours on the actual devices and compiling the applicable list of commands and their results.
+All the .json files can be found in the keyboards folder, they are hand made by observing the keyboards and their behaviours on the actual devices and compiling the applicable list of commands and their results. Simplest explanation is, observe particular letter on the keyboard and then use all available keys ("RIGHT", "DOWN", "LEFT", "UP") to see where the focus will shift to. then for each of the keys on the keyboard compile a list like the following (this one is taken from the sagemcom):
+
+```
+"6": {"7": "RIGHT", "y": "DOWN", "5": "LEFT", " ": "UP"},
+```
+
+With the list ready, a full graph can be created and be used by BFS algorithm to create shortest path between letter inputs, as well as it makes the creation of suite.st commands easier by already holding propper direction.
 
 ## TODO
 
