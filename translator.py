@@ -17,7 +17,7 @@ class Translator():
         order to input the string on the deivce, it is either printed to console or coppied into clipboard
         and it has to be coppied into test in suite.st.\n
         _format                         -- format of tqdm bar.\n
-        _keyboard                       -- disctionary holding keyboard layouts and additional informations
+        _keyboard                       -- dictionary holding keyboard layouts and additional informations
         needed by a program to run the BFS calculations.\n
         _text                           -- string given by the user, the same variable is used to perform all
         the necessary transformations.\n
@@ -28,7 +28,7 @@ class Translator():
         _bfs                            -- implementation of Breadth First Search algorithm, finds the
         shortest path between two nodes in the graph.\n
         _input_prep                     -- converts string to symbols that can be found on the keybord ([A]
-        is changed into [SHIFT, a], any special symbols are prefixed with SPECIAL symbol).\n
+        is changed into [SHIFT, a, SHIFT], same for symbols are but with SPECIAL instead of SHIFT).\n
         _prep_commands                  -- main function responsible for compiling the list of commands
         needed by suitest to type in the given string on the chosen device.\n
         _read_keyboard_setup            -- reads respecitve keyboard file and parses it into dictionary to
@@ -142,19 +142,23 @@ class Translator():
             the shortest paths using BFS which then is translated to remote clicks.
         """
         text = self._text
+        # add starting letter and convert to pairs, ignore last pair as it would cycle over
         path = [(self._keyboard['begin'], text[0])] + list(zip(text, np.roll(text, -1)))[:-1]
         commands = []
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{self._args.platform}"}}')
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{self._args.string}"}}')
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"----------"}}')
         special = False
+        # big loop, merges whole lists of commands
         for i in tqdm(path, desc="Generating key sequence", bar_format=self._format):
             commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{i[1]}"}}')
             path_order = []
             key = 'arcs' if special else 'edges'
             path = self._bfs(self._keyboard[key], i[0], i[1])
+            # small loop, creates list of commands for going from A to B
             for j in list(zip(path, np.roll(path, -1)))[:-1]:
                 path_order.append(self._keyboard[key][j[0]][j[1]])
+            # group clicks into groups (instead of 3 commads, one command that says click 3 times)
             if path_order:
                 last = path_order[0]
                 count = 1
@@ -174,6 +178,7 @@ class Translator():
     def _read_keyboard_setup(self) -> None:
         """ Read keyboard .json file and parse it into JSON / dictionary.
         """
+        # TODO safeguard for reading file and then for conversion, look up decorators in python
         with open("keyboards/" + self._args.platform + ".json") as f:
             self._keyboard = json.loads("".join(f.readlines()))
 
