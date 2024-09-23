@@ -6,6 +6,28 @@ Autoclicking tool supporting work in QA TV LAB and allowing for typing in comple
 
 Program that translates strings into set of remote inputs that can write out given string onto the devices available in the QA TV LAB. The program itself produces a string that contains the list of commands that can be coppied into a test in suite.st. If program runs on MacOs it will copy the commands into the clipboard, otherwise the string has to be coppied from the console where it will be printed. The command list will be changed based on the platform that the commands are prepared for.
 
+## Setup
+
+Program was created using python 3.11 and poetry. After installing python with pip, use:
+
+```
+python -m pip install poetry
+```
+
+note that on Unix type system usage of python3 may be needed instead. With poetry installed, a command:
+
+```
+poetry install
+```
+
+must be run to install the dependencies. Then running:
+
+```
+poetry shell
+```
+
+gives access to the installed dependencies and the program is ready to be run.
+
 ## Usage
 
 ```
@@ -52,4 +74,6 @@ With the list ready, a full graph can be created and be used by BFS algorithm to
 
 ## TODO
 
-Saveguards while reading the file.
+Implementation of type of keyboard that does not support CAPS.  
+Addition of the remaining keyboard patterns.  
+Safeguards while reading the file.
