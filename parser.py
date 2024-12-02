@@ -11,5 +11,6 @@ parser = argparse.ArgumentParser(
 filenames = next(walk('./keyboards'), (None, None, []))[2] 
 choices = [filename.split('.json')[0] for filename in filenames if filename.endswith('.json')]
 choices.sort()
+
 parser.add_argument('platform', choices=choices, help="platform of the device")
 parser.add_argument('string', help="text that should be translated")
