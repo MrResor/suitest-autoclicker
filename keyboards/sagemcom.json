@@ -100,6 +100,6 @@
         "www.":         {" ":           "RIGHT", "!":           "DOWN", "https://":     "LEFT", "&":            "UP"},
         " ":            {"LEFT":        "RIGHT", "$":           "DOWN", "www.":         "LEFT", "-":            "UP"},
         "LEFT":         {"RIGHT":       "RIGHT", "%":           "DOWN", " ":            "LEFT", ":":            "UP"},
-        "RIGHT":        {"https://":    "RIGHT", "BACKSPACE":   "DOWN", "LEFT":         "LEFT", ";":            "UP"}
+        "RIGHT":        {"https://":    "RIGHT", "BACKSPACE":   "DOWN", "LEFT":         "LEFT", "SPECIAL":      "UP"}
     }
 }
