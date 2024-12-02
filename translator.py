@@ -1,9 +1,9 @@
 from collections import deque
 from sys import platform
-import json
+from json import loads
 
-import numpy as np
-from tqdm import tqdm
+from numpy import roll # function for rolling over array ([a,b,c] -> [b,c,a])
+from tqdm import tqdm # library for nice looking progress bars in console
 
 from parser import parser
 
@@ -16,7 +16,7 @@ class Translator():
         _commands                       -- string created using the list of commands that need to be used in
         order to input the string on the deivce, it is either printed to console or coppied into clipboard
         and it has to be coppied into test in suite.st.\n
-        _format                         -- format of tqdm bar.\n
+        _format                         -- format of tqdm progress bar.\n
         _keyboard                       -- dictionary holding keyboard layouts and additional informations
         needed by a program to run the BFS calculations.\n
         _text                           -- string given by the user, the same variable is used to perform all
@@ -43,6 +43,7 @@ class Translator():
             string.
         """
         self._args = parser.parse_args()
+        # in case of changes of format, consult tqdm documentation
         self._format = "{desc:<25}: {percentage:3.0f}%|{bar:100}{r_bar}{bar:-10b}"
         self._read_keyboard_setup()
         self._input_prep()
@@ -54,26 +55,26 @@ class Translator():
         self._to_clipboard()
 
     # private functions
-    def _bfs(self, graph:dict, S:str, D:str) -> None:
+    def _bfs(self, graph:dict, Start:str, Destination:str) -> None:
         """ Implementation of Breadth First Search algorithm for finding shortest path in the graph. Takes
-            in graph description, starting and destination nodes as parameters and returns a list of nodes
+            in graph description, Start and Destination nodes as parameters and returns a list of nodes
             that needs to be visited in given order to reach destination node from the starting node.
         """
 
         visited = {}
         # Queue to store the nodes in the order they are visited
-        q = deque()
+        queue = deque()
         # Push the source node to the queue
-        q.append(S)
+        queue.append(Start)
 
-        visited[S] = None
+        visited[Start] = None
 
         # Iterate until the queue is not empty
-        while q:
+        while queue:
             # Pop the node at the front of the queue
-            node = q.popleft()
+            node = queue.popleft()
             # Explore all the neighbors of the current node
-            if node == D:
+            if node == Destination:
                 path = []
                 while node:
                     path.append(node)
@@ -84,7 +85,7 @@ class Translator():
                 # Check if the neighboring node is not visited
                 if neighbour not in visited:
                     visited[neighbour] = node
-                    q.append(neighbour)
+                    queue.append(neighbour)
 
     def _handle_win_and_linux_output(self) -> None:
         """ Informs that copying to clipboard is not possible and prints to console.
@@ -104,19 +105,19 @@ class Translator():
             iter = tqdm(list(inverse), desc="Processing input", bar_format=self._format)
             # passes are done from end to start to make indexing and insterting  easier
             # first pass, for capital letters
-            for i, v in iter:
-                if v.isupper() and not flag:
-                    text[i] = v.lower()
+            for index, value in iter:
+                if value.isupper() and not flag:
+                    text[index] = value.lower()
                     for _ in range(self._keyboard['type']):
-                        text.insert(i+1, "CAPS")
+                        text.insert(index+1, "CAPS")
                     flag = True
                     continue
-                if v.isupper() and flag:
-                    text[i] = v.lower()
+                if value.isupper() and flag:
+                    text[index] = value.lower()
                     continue
-                if not v.isupper() and flag:
+                if not value.isupper() and flag:
                     for _ in range(self._keyboard['type']):
-                        text.insert(i+1, "CAPS")
+                        text.insert(index+1, "CAPS")
                     flag = False
             if flag:
                 text.insert(0, "CAPS")
@@ -124,13 +125,13 @@ class Translator():
             inverse = reversed(list(enumerate(text)))
             iter = tqdm(list(inverse), desc="Processing input", bar_format=self._format)
             # second pass, for special characters
-            for i, v in iter:
-                if v in self._keyboard['special'] and not flag:
-                    text.insert(i+1, "SPECIAL")
+            for index, value in iter:
+                if value in self._keyboard['special'] and not flag:
+                    text.insert(index+1, "SPECIAL")
                     flag = True
                     continue
-                if v not in self._keyboard['special'] and flag:
-                    text.insert(i+1, "SPECIAL")
+                if value not in self._keyboard['special'] and flag:
+                    text.insert(index+1, "SPECIAL")
                     flag = False
             if flag:
                 text.insert(0, "SPECIAL")
@@ -143,35 +144,35 @@ class Translator():
         """
         text = self._text
         # add starting letter and convert to pairs, ignore last pair as it would cycle over
-        path = [(self._keyboard['begin'], text[0])] + list(zip(text, np.roll(text, -1)))[:-1]
+        path = [(self._keyboard['begin'], text[0])] + list(zip(text, roll(text, -1)))[:-1]
         commands = []
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{self._args.platform}"}}')
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{self._args.string}"}}')
         commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"----------"}}')
         special = False
         # big loop, merges whole lists of commands
-        for i in tqdm(path, desc="Generating key sequence", bar_format=self._format):
-            commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{i[1]}"}}')
+        for big_pair in tqdm(path, desc="Generating key sequence", bar_format=self._format):
+            commands.append(f'{{"type":"comment","excluded":false,"fatal":false,"screenshot":false,"val":"{big_pair[1]}"}}')
             path_order = []
             key = 'arcs' if special else 'edges'
-            path = self._bfs(self._keyboard[key], i[0], i[1])
+            path = self._bfs(self._keyboard[key], big_pair[0], big_pair[1])
             # small loop, creates list of commands for going from A to B
-            for j in list(zip(path, np.roll(path, -1)))[:-1]:
-                path_order.append(self._keyboard[key][j[0]][j[1]])
-            # group clicks into groups (instead of 3 commads, one command that says click 3 times)
+            for small_pair in list(zip(path, roll(path, -1)))[:-1]:
+                path_order.append(self._keyboard[key][small_pair[0]][small_pair[1]])
+            # group clicks into multiclicks (instead of 3 commads, one command that says click 3 times)
             if path_order:
                 last = path_order[0]
                 count = 1
-                for j in path_order[1:]:
-                    if last == j:
+                for key in path_order[1:]:
+                    if last == key:
                         count += 1
                     else:
                         commands.append(f'{{"type":"button","excluded":false,"fatal":false,"screenshot":false,"count":{count},"delay":"<%del%>","ids":["{last}"]}}')
-                        last = j
+                        last = key
                         count = 1
                 commands.append(f'{{"type":"button","excluded":false,"fatal":false,"screenshot":false,"count":{count},"delay":"<%del%>","ids":["{last}"]}}')
             commands.append(f'{{"type":"button","excluded":false,"fatal":false,"screenshot":false,"count":1,"delay":"<%del%>","ids":["ENTER"]}}')
-            special = not special if i[1] == "SPECIAL" else special
+            special = not special if big_pair[1] == "SPECIAL" else special
                 
         self._commands = '[' + ','.join(commands) + ']'    
 
@@ -180,7 +181,7 @@ class Translator():
         """
         # TODO safeguard for reading file and then for conversion, look up decorators in python
         with open("keyboards/" + self._args.platform + ".json") as f:
-            self._keyboard = json.loads("".join(f.readlines()))
+            self._keyboard = loads("".join(f.readlines()))
 
     def _to_clipboard(self) -> None:
         """ Copies prepared instructions to clipboard, and if copying is not possible it will call a function
@@ -189,8 +190,8 @@ class Translator():
         if platform == "linux" or platform == "linux2":
             self._handle_win_and_linux_output()
         elif platform == "darwin":
-            import subprocess 
-            subprocess.run("pbcopy", text=True, input=self._commands)
+            from subprocess import run as process_run
+            process_run("pbcopy", text=True, input=self._commands)
             print("Coppied to clibpoard.")
         elif platform == "win32":
             self._handle_win_and_linux_output()
