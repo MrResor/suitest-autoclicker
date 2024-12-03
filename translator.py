@@ -6,6 +6,8 @@ from numpy import roll # function for rolling over array ([a,b,c] -> [b,c,a])
 from tqdm import tqdm # library for nice looking progress bars in console
 
 from parser import parser
+from decorators import open_file, json_keys
+from errors import FileEmpty
 
 class Translator():
     """ Class that translates string input to list of instructions for remote that need to be clicked to type
@@ -93,6 +95,7 @@ class Translator():
         print("Platform not supported for copying to clipboard, please copy manualy from below:")
         print(self._commands)
 
+    @json_keys
     def _input_prep(self) -> None:
         """ Parses the input string based on the keyboard type so it can be typed in using given keyboard.
             For example, for keyboards of type 1 and 2 any capital letter needs to be changed into normal
@@ -137,6 +140,7 @@ class Translator():
                 text.insert(0, "SPECIAL")
         self._text = text
 
+    @json_keys
     def _prep_commands(self) -> None:
         """ Prepaires the commands that should be send to suitest to type in given string. It paires the
             letters in the string (for example 'ABC' is converted into pairs 'AB' and 'BC') and then finds
@@ -176,12 +180,15 @@ class Translator():
                 
         self._commands = '[' + ','.join(commands) + ']'    
 
+    @open_file
     def _read_keyboard_setup(self) -> None:
         """ Read keyboard .json file and parse it into JSON / dictionary.
         """
-        # TODO safeguard for reading file and then for conversion, look up decorators in python
         with open("keyboards/" + self._args.platform + ".json") as f:
-            self._keyboard = loads("".join(f.readlines()))
+            lines = f.readlines()
+            if not lines:
+                raise FileEmpty
+            self._keyboard = loads("".join(lines))
 
     def _to_clipboard(self) -> None:
         """ Copies prepared instructions to clipboard, and if copying is not possible it will call a function
