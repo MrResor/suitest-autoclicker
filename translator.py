@@ -6,8 +6,8 @@ from numpy import roll # function for rolling over array ([a,b,c] -> [b,c,a])
 from tqdm import tqdm # library for nice looking progress bars in console
 
 from parser import parser
-from decorators import open_file, json_keys
-from errors import FileEmpty
+from decorators import open_file, json_keys, no_destination
+from errors import FileEmpty, PathEmpty
 
 class Translator():
     """ Class that translates string input to list of instructions for remote that need to be clicked to type
@@ -57,7 +57,8 @@ class Translator():
         self._to_clipboard()
 
     # private functions
-    def _bfs(self, graph:dict, Start:str, Destination:str) -> None:
+    @no_destination
+    def _bfs(self, graph:dict, Start:str, Destination:str) -> list:
         """ Implementation of Breadth First Search algorithm for finding shortest path in the graph. Takes
             in graph description, Start and Destination nodes as parameters and returns a list of nodes
             that needs to be visited in given order to reach destination node from the starting node.
@@ -81,13 +82,15 @@ class Translator():
                 while node:
                     path.append(node)
                     node = visited[node]
-                return path [::-1]
+                return path[::-1]
 
             for neighbour in graph[node]:
                 # Check if the neighboring node is not visited
                 if neighbour not in visited:
                     visited[neighbour] = node
                     queue.append(neighbour)
+
+        raise PathEmpty(Destination)
 
     def _handle_win_and_linux_output(self) -> None:
         """ Informs that copying to clipboard is not possible and prints to console.
