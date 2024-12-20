@@ -76,4 +76,3 @@ With the list ready, a full graph can be created and be used by BFS algorithm to
 
 Implementation of type of keyboard that does not support CAPS.  
 Addition of the remaining keyboard patterns.  
-Safeguards while reading the file.
